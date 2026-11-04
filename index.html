@@ -1,0 +1,491 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLibrary - Dashboard Literário Interativo</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .star-rating i { cursor: pointer; transition: color 0.15s ease; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col pb-12">
+
+    <header class="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-30 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-book-open text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">SmartLibrary</h1>
+                    <p class="text-xs text-slate-400">Dashboard & Gestão de Acervo</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="carregarDadosExemplo()" class="hidden sm:flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                    <span>Dados de Exemplo</span>
+                </button>
+                <button onclick="abrirModal()" class="flex items-center space-x-2 px-4 py-2 text-sm font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Novo Livro</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8 flex-1 w-full">
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-panel p-5 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Total no Acervo</p>
+                    <h3 id="kpi-total-livros" class="text-3xl font-extrabold text-white mt-1">0</h3>
+                    <p class="text-xs text-indigo-400 mt-1"><i class="fa-solid fa-bookmark mr-1"></i>Registrados</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                    <i class="fa-solid fa-books text-xl"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Autores Únicos</p>
+                    <h3 id="kpi-total-autores" class="text-3xl font-extrabold text-white mt-1">0</h3>
+                    <p class="text-xs text-purple-400 mt-1"><i class="fa-solid fa-feather mr-1"></i>Diversidade</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                    <i class="fa-solid fa-user-pen text-xl"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Gênero Predominante</p>
+                    <h3 id="kpi-genero-top" class="text-xl font-bold text-white mt-2 truncate max-w-[140px]">-</h3>
+                    <p class="text-xs text-emerald-400 mt-1"><i class="fa-solid fa-chart-pie mr-1"></i>Mais lido</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <i class="fa-solid fa-layer-group text-xl"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Média de Avaliação</p>
+                    <div class="flex items-baseline space-x-2 mt-1">
+                        <h3 id="kpi-media-stars" class="text-3xl font-extrabold text-white">0.0</h3>
+                        <span class="text-amber-400 text-sm"><i class="fa-solid fa-star"></i></span>
+                    </div>
+                    <p class="text-xs text-amber-400 mt-1"><i class="fa-solid fa-heart mr-1"></i>Satisfação</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                    <i class="fa-solid fa-star-half-stroke text-xl"></i>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-panel p-6 rounded-2xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-indigo-400"></i> Distribuição por Gênero
+                    </h2>
+                </div>
+                <div class="h-64 flex items-center justify-center">
+                    <canvas id="chartGenero"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-column text-purple-400"></i> Top Autores no Acervo
+                    </h2>
+                </div>
+                <div class="h-64 flex items-center justify-center">
+                    <canvas id="chartAutores"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-panel rounded-2xl p-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-lg font-bold text-white">Acervo do SmartLibrary</h2>
+                    <p class="text-xs text-slate-400">Gerencie e pesquise suas obras cadastradas</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="relative flex-1 sm:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="input-busca" oninput="filtrarLivros()" placeholder="Buscar por título ou autor..." 
+                            class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+
+                    <select id="filtro-genero" onchange="filtrarLivros()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500">
+                        <option value="">Todos os Gêneros</option>
+                        <option value="Ficção Científica">Ficção Científica</option>
+                        <option value="Romance">Romance</option>
+                        <option value="Fantasia">Fantasia</option>
+                        <option value="Tecnologia / Dados">Tecnologia / Dados</option>
+                        <option value="Desenvolvimento Pessoal">Desenvolvimento Pessoal</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-slate-800">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-900/90 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                        <tr>
+                            <th class="py-3 px-4">Livro</th>
+                            <th class="py-3 px-4">Autor</th>
+                            <th class="py-3 px-4">Gênero</th>
+                            <th class="py-3 px-4">Avaliação</th>
+                            <th class="py-3 px-4 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-corpo" class="divide-y divide-slate-800/60">
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="estado-vazio" class="hidden py-12 text-center">
+                <i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i>
+                <p class="text-slate-400 font-medium">Nenhum livro cadastrado ou encontrado.</p>
+                <button onclick="carregarDadosExemplo()" class="mt-3 text-xs text-indigo-400 hover:text-indigo-300 underline font-semibold">
+                    Clique aqui para carregar dados de exemplo
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL DE CADASTRO -->
+    <div id="modal-cadastro" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-panel bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
+            <button onclick="fecharModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-book-medical text-indigo-400"></i> Adicionar ao Acervo
+            </h3>
+            <p class="text-xs text-slate-400 mb-6">Preencha as informações da sua leitura</p>
+
+            <form id="form-novo-livro" onsubmit="salvarNovoLivro(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Título do Livro</label>
+                    <input type="text" id="cad-titulo" required placeholder="Ex: Dom Casmurro"
+                        class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Autor</label>
+                    <input type="text" id="cad-autor" required placeholder="Ex: Machado de Assis"
+                        class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Gênero</label>
+                    <select id="cad-genero" required class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                        <option value="Romance">Romance</option>
+                        <option value="Ficção Científica">Ficção Científica</option>
+                        <option value="Fantasia">Fantasia</option>
+                        <option value="Tecnologia / Dados">Tecnologia / Dados</option>
+                        <option value="Desenvolvimento Pessoal">Desenvolvimento Pessoal</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-300 mb-2">Avaliação</label>
+                    <div class="flex items-center space-x-2 text-2xl text-amber-400 star-rating" id="star-container">
+                        <i class="fa-solid fa-star" onclick="definirNota(1)"></i>
+                        <i class="fa-solid fa-star" onclick="definirNota(2)"></i>
+                        <i class="fa-solid fa-star" onclick="definirNota(3)"></i>
+                        <i class="fa-solid fa-star" onclick="definirNota(4)"></i>
+                        <i class="fa-solid fa-star" onclick="definirNota(5)"></i>
+                        <span id="nota-texto" class="text-sm font-semibold text-slate-300 ml-2">5/5</span>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3">
+                    <button type="button" onclick="fecharModal()" class="px-4 py-2 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 text-sm font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition">Salvar Livro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-notificacao" class="fixed bottom-6 right-6 z-50 translate-y-20 opacity-0 transition-all duration-300 ease-out pointer-events-none">
+        <div class="glass-panel bg-slate-900 border border-emerald-500/40 text-emerald-300 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+            <span id="toast-mensagem" class="text-sm font-medium">Ação realizada com sucesso!</span>
+        </div>
+    </div>
+
+    <script>
+        let biblioteca = JSON.parse(localStorage.getItem('smartlibrary_acervo')) || [];
+        let notaSelecionada = 5;
+
+        let chartGeneroInstance = null;
+        let chartAutoresInstance = null;
+
+        
+        window.onload = function() {
+            if (biblioteca.length === 0) {
+                carregarDadosExemplo(false);
+            } else {
+                renderizarTudo();
+            }
+        };
+
+        function renderizarTudo() {
+            renderizarTabela(biblioteca);
+            atualizarKPIs();
+            renderizarGraficos();
+        }
+
+        function renderizarTabela(lista) {
+            const corpo = document.getElementById('tabela-corpo');
+            const estadoVazio = document.getElementById('estado-vazio');
+
+            corpo.innerHTML = '';
+
+            if (lista.length === 0) {
+                estadoVazio.classList.remove('hidden');
+                return;
+            } else {
+                estadoVazio.classList.add('hidden');
+            }
+
+            lista.forEach((livro, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition";
+
+                let estrelasHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= livro.nota) {
+                        estrelasHtml += '<i class="fa-solid fa-star text-amber-400 text-xs"></i>';
+                    } else {
+                        estrelasHtml += '<i class="fa-regular fa-star text-slate-600 text-xs"></i>';
+                    }
+                }
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-white flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xs font-bold">
+                            ${livro.titulo.charAt(0).toUpperCase()}
+                        </div>
+                        <span>${livro.titulo}</span>
+                    </td>
+                    <td class="py-3 px-4 text-slate-300">${livro.autor}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2.5 py-1 text-xs rounded-full bg-slate-800 border border-slate-700 text-indigo-300">
+                            ${livro.genero}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="flex items-center space-x-1">${estrelasHtml}</div>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="removerLivro(${index})" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition" title="Excluir livro">
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                    </td>
+                `;
+                corpo.appendChild(tr);
+            });
+        }
+
+        function atualizarKPIs() {
+            document.getElementById('kpi-total-livros').innerText = biblioteca.length;
+
+            const autoresUnicos = new Set(biblioteca.map(b => b.autor.trim().toLowerCase())).size;
+            document.getElementById('kpi-total-autores').innerText = autoresUnicos;
+
+            if (biblioteca.length > 0) {
+                const contagemGenero = {};
+                biblioteca.forEach(b => contagemGenero[b.genero] = (contagemGenero[b.genero] || 0) + 1);
+                const generoTop = Object.keys(contagemGenero).reduce((a, b) => contagemGenero[a] > contagemGenero[b] ? a : b);
+                document.getElementById('kpi-genero-top').innerText = generoTop;
+
+                const somaNotas = biblioteca.reduce((acc, curr) => acc + Number(curr.nota), 0);
+                const media = (somaNotas / biblioteca.length).toFixed(1);
+                document.getElementById('kpi-media-stars').innerText = media;
+            } else {
+                document.getElementById('kpi-genero-top').innerText = "-";
+                document.getElementById('kpi-media-stars').innerText = "0.0";
+            }
+        }
+
+        function renderizarGraficos() {
+            
+            const contagemGenero = {};
+            const contagemAutor = {};
+
+            biblioteca.forEach(b => {
+                contagemGenero[b.genero] = (contagemGenero[b.genero] || 0) + 1;
+                contagemAutor[b.autor] = (contagemAutor[b.autor] || 0) + 1;
+            });
+
+            if (chartGeneroInstance) chartGeneroInstance.destroy();
+            if (chartAutoresInstance) chartAutoresInstance.destroy();
+
+            const ctxG = document.getElementById('chartGenero').getContext('2d');
+            chartGeneroInstance = new Chart(ctxG, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(contagemGenero),
+                    datasets: [{
+                        data: Object.values(contagemGenero),
+                        backgroundColor: ['#6366f1', '#a855f7', '#10b981', '#f59e0b', '#ec4899', '#64748b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } }
+                    }
+                }
+            });
+
+            const topAutores = Object.entries(contagemAutor)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            const ctxA = document.getElementById('chartAutores').getContext('2d');
+            chartAutoresInstance = new Chart(ctxA, {
+                type: 'bar',
+                data: {
+                    labels: topAutores.map(a => a[0]),
+                    datasets: [{
+                        label: 'Livros',
+                        data: topAutores.map(a => a[1]),
+                        backgroundColor: '#818cf8',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: '#334155' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function abrirModal() {
+            document.getElementById('modal-cadastro').classList.remove('hidden');
+            document.getElementById('modal-cadastro').classList.add('flex');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-cadastro').classList.add('hidden');
+            document.getElementById('modal-cadastro').classList.remove('flex');
+            document.getElementById('form-novo-livro').reset();
+            definirNota(5);
+        }
+
+        function definirNota(nota) {
+            notaSelecionada = nota;
+            const stars = document.querySelectorAll('#star-container i');
+            stars.forEach((star, index) => {
+                if (index < nota) {
+                    star.className = "fa-solid fa-star text-amber-400";
+                } else {
+                    star.className = "fa-regular fa-star text-slate-600";
+                }
+            });
+            document.getElementById('nota-texto').innerText = `${nota}/5`;
+        }
+
+        function salvarNovoLivro(e) {
+            e.preventDefault();
+            const titulo = document.getElementById('cad-titulo').value.trim();
+            const autor = document.getElementById('cad-autor').value.trim();
+            const genero = document.getElementById('cad-genero').value;
+
+            if (!titulo || !autor) return;
+
+            const novoLivro = { titulo, autor, genero, nota: notaSelecionada };
+            biblioteca.unshift(novoLivro);
+
+            salvarStorage();
+            renderizarTudo();
+            fecharModal();
+            exibirToast(`'${titulo}' foi adicionado ao acervo!`);
+        }
+
+        function removerLivro(index) {
+            const tituloRemovido = biblioteca[index].titulo;
+            biblioteca.splice(index, 1);
+            salvarStorage();
+            renderizarTudo();
+            exibirToast(`'${tituloRemovido}' foi removido do acervo.`);
+        }
+
+        function filtrarLivros() {
+            const busca = document.getElementById('input-busca').value.toLowerCase();
+            const generoFiltro = document.getElementById('filtro-genero').value;
+
+            const filtrados = biblioteca.filter(livro => {
+                const bateTexto = livro.titulo.toLowerCase().includes(busca) || livro.autor.toLowerCase().includes(busca);
+                const bateGenero = generoFiltro === "" || livro.genero === generoFiltro;
+                return bateTexto && bateGenero;
+            });
+
+            renderizarTabela(filtrados);
+        }
+
+        function salvarStorage() {
+            localStorage.setItem('smartlibrary_acervo', JSON.stringify(biblioteca));
+        }
+
+        function carregarDadosExemplo(notificar = true) {
+            biblioteca = [
+                { titulo: "Dom Casmurro", autor: "Machado de Assis", genero: "Romance", nota: 5 },
+                { titulo: "1984", autor: "George Orwell", genero: "Ficção Científica", nota: 5 },
+                { titulo: "O Hobbit", autor: "J.R.R. Tolkien", genero: "Fantasia", nota: 4 },
+                { titulo: "Python para Análise de Dados", autor: "Wes McKinney", genero: "Tecnologia / Dados", nota: 5 },
+                { titulo: "A Revolução dos Bicho", autor: "George Orwell", genero: "Ficção Científica", nota: 4 },
+                { titulo: "O Alquimista", autor: "Paulo Coelho", genero: "Desenvolvimento Pessoal", nota: 4 }
+            ];
+            salvarStorage();
+            renderizarTudo();
+            if (notificar) exibirToast("Dados de exemplo carregados!");
+        }
+
+        function exibirToast(mensagem) {
+            const toast = document.getElementById('toast-notificacao');
+            document.getElementById('toast-mensagem').innerText = mensagem;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
